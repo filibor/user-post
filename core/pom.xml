@@ -12,7 +12,7 @@
     <artifactId>user-post-core</artifactId>
     <packaging>jar</packaging>
 
-    <name>Core User post services</name>
+    <name>User post services core</name>
     <description>Contains all application logic</description>
 
     <dependencies>
