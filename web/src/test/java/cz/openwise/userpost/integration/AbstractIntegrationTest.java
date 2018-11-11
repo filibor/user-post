@@ -1,4 +1,4 @@
-package cz.openwise.userpost.web;
+package cz.openwise.userpost.integration;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,17 +10,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * Parent of controller tests
+ * Parent of all integration tests
  *
  * @author <a href="mailto:filip.borovec@openwise.cz">Filip Borovec</a>
  */
-public abstract class AbstractControllerTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public abstract class AbstractIntegrationTest {
 
     private final ObjectMapper objectMapper;
 
-    public AbstractControllerTest() {
+    public AbstractIntegrationTest() {
         objectMapper = new ObjectMapper();
     }
 

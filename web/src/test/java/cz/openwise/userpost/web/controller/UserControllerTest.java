@@ -1,13 +1,9 @@
 package cz.openwise.userpost.web.controller;
 
-import java.util.List;
-
+import cz.openwise.userpost.core.domain.ImmutablePostDO;
+import cz.openwise.userpost.core.domain.ImmutableUserWithPostsDO;
 import cz.openwise.userpost.core.domain.UserWithPostsDO;
-import cz.openwise.userpost.core.entity.Post;
-import cz.openwise.userpost.core.entity.User;
-import cz.openwise.userpost.core.repository.PostRepository;
-import cz.openwise.userpost.core.repository.UserRepository;
-import cz.openwise.userpost.web.AbstractControllerTest;
+import cz.openwise.userpost.core.service.UserPostService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -17,7 +13,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import reactor.core.publisher.Flux;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 /**
@@ -27,35 +23,50 @@ import reactor.core.publisher.Mono;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class UserControllerTest extends AbstractControllerTest {
+public class UserControllerTest {
 
     private static final long USER_ID = 1L;
+    private static final long NON_EXISTING_USER_ID = 20L;
 
     @Autowired
     private WebTestClient webTestClient;
 
     @MockBean
-    private UserRepository userRepository;
-
-    @MockBean
-    private PostRepository postRepository;
+    private UserPostService userPostService;
 
     @Test
-    public void getUserWithPosts_success() throws Exception {
-        final User mockUser = readSource("mock-user.json", User.class);
-        final List<Post> mockPosts = readSourceAsList("mock-posts.json", Post.class);
-        Mockito.when(userRepository.findById(USER_ID)).thenReturn(Mono.just(mockUser));
-        Mockito.when(postRepository.findByUserId(USER_ID)).thenReturn(Flux.fromIterable(mockPosts));
+    public void getUserWithPosts_success() {
+        UserWithPostsDO userWithPostsDO = getUserWithPosts();
+        Mockito.when(userPostService.getUserWithPosts(USER_ID)).thenReturn(Mono.just(userWithPostsDO));
 
-        final UserWithPostsDO expected = readSource("expected-userpost.json", UserWithPostsDO.class);
         webTestClient
                 .get().uri("/users/{id}", USER_ID)
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(UserWithPostsDO.class)
-                .isEqualTo(expected);
+                .isEqualTo(userWithPostsDO);
     }
 
+    @Test
+    public void getUserWithPosts_notFound() {
+        Mockito.when(userPostService.getUserWithPosts(NON_EXISTING_USER_ID)).thenThrow(WebClientResponseException.NotFound.class);
+        webTestClient
+                .get().uri("/users/{id}", NON_EXISTING_USER_ID)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
 
+    private UserWithPostsDO getUserWithPosts() {
+        return ImmutableUserWithPostsDO.builder()
+                                       .name("Filip")
+                                       .username("filibor")
+                                       .email("emai@email.cz")
+                                       .addPosts(ImmutablePostDO.builder()
+                                                                .id(1)
+                                                                .title("Some title")
+                                                                .build())
+                                       .build();
+    }
 }

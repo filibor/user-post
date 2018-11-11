@@ -11,12 +11,12 @@ public class ErrorHandlingAdvice {
 
     @ExceptionHandler(WebClientResponseException.NotFound.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public void handleDuplicateKeyException(WebClientResponseException.NotFound e) {
+    public void handleNotFoundException(WebClientResponseException.NotFound e) {
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public void handleDuplicateKeyException(Exception e) {
+    public void handleException(Exception e) {
     }
 
 }

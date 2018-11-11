@@ -44,6 +44,5 @@ public class SpringBootConsoleApplication implements CommandLineRunner {
         }
 
         objectMapper.writeValue(System.out, userPostService.getUserWithPosts(userId).block());
-        System.exit(0);
     }
 }
